@@ -1,0 +1,29 @@
+{
+    // Esconde do explorador arquivos gerados automaticamente
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "venv": true
+    },
+    // Não procura dentro do venv ao buscar (Ctrl+Shift+F)
+    "search.exclude": {
+        "venv": true
+    },
+    // Usa o Python do venv do projeto (terminal, depurador, autocomplete)
+    "python.defaultInterpreterPath": "${workspaceFolder}/venv/Scripts/python.exe",
+    // Formatação consistente
+    "editor.rulers": [100],
+    "files.trimTrailingWhitespace": true,
+    "files.insertFinalNewline": true,
+    "files.encoding": "utf8",
+    "[python]": {
+        "editor.tabSize": 4
+    },
+    "[html][css][javascript][jinja-html]": {
+        "editor.tabSize": 2
+    },
+    // Templates do Flask ficam em app/templates
+    "files.associations": {
+        "**/templates/**/*.html": "jinja-html"
+    }
+}
