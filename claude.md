@@ -129,8 +129,9 @@ psql ... -f sql/schema.sql && psql ... -f sql/views.sql
 
 - [x] Postgres no docker compose (porta local 127.0.0.1:5433), `schema.sql`, `models.py`, `config.py`, `db.py`, `create_app()` com `/saude`.
 - [x] Coluna `posto` removida de `distribuicao` (schema, modelo e banco local).
-- [ ] API de eventos e compras.
+- [x] API de eventos e compras (`app/eventos/api.py`, `app/compras/api.py`), validação em `app/validacao.py`, erros da API em JSON. Testada contra o banco local.
+- [x] `login_required` e `flask criar-operador` (`app/auth/`). Falta a tela de login.
 - [ ] Páginas de compras, upload da foto, tela de contagem.
-- [ ] Login por código, `criar-operador`, Flask-Limiter.
+- [ ] Tela de login por código, `/logout`, Flask-Limiter.
 - [ ] `views.sql` e role `powerbi`.
 - [ ] Deploy (Dockerfile, Caddy, backup).
