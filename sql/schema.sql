@@ -43,7 +43,6 @@ CREATE TABLE IF NOT EXISTS distribuicao(
     evento_id INT NOT NULL REFERENCES evento(id),
     operador_id INT NOT NULL REFERENCES operador(id),
     quantidade INT NOT NULL CHECK (quantidade IN (1, -1)),
-    posto TEXT,
     client_id UUID NOT NULL UNIQUE,
     clicado_em TIMESTAMPTZ NOT NULL,
     registrado_em TIMESTAMPTZ NOT NULL DEFAULT now()

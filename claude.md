@@ -50,18 +50,18 @@ sopao/
 
 ## Modelo de dados
 
-Cada dia de campanha é um `evento`. Um ponto de distribuição por dia (o campo `posto` existe, mas fica fora da tela por enquanto).
+Cada dia de campanha é um `evento`. Um ponto de distribuição por dia (sem campo `posto`; se precisar de vários pontos, volta com `ALTER TABLE`).
 
 - **evento**: id, nome, data, local
 - **operador**: id, nome, codigo_hash (nunca o código puro), ativo
 - **compra**: id, evento_id, operador_id, data_compra, fornecedor, cnpj_emitente CHAR(14), numero_nota, chave_acesso CHAR(44) UNIQUE, valor_total NUMERIC(10,2), foto_path, origem_dados (`manual` | `qr` | `ia`, padrão `manual`), criado_em
 - **item_compra**: id, compra_id (ON DELETE CASCADE), descricao, categoria, quantidade NUMERIC(10,3), unidade (kg, un, l, pct), valor_unitario NUMERIC(10,2), valor_total gerado = `round(quantidade * valor_unitario, 2)`
-- **distribuicao**: id BIGSERIAL, evento_id, operador_id, quantidade INT (1 ou -1), posto, client_id UUID UNIQUE, clicado_em (hora do clique, vinda do navegador), registrado_em
+- **distribuicao**: id BIGSERIAL, evento_id, operador_id, quantidade INT (1 ou -1), client_id UUID UNIQUE (torna o reenvio da fila offline seguro, não remover), clicado_em (hora do clique, vinda do navegador), registrado_em
 
 ### Views para o Power BI (`sql/views.sql`)
 
 - `vw_itens`: item_compra + evento_id, data_compra, fornecedor, numero_nota
-- `vw_distribuicao`: evento_id, posto, quantidade, clicado_em, `date_trunc('hour', clicado_em) AS hora`
+- `vw_distribuicao`: evento_id, quantidade, clicado_em, `date_trunc('hour', clicado_em) AS hora`
 - `vw_conferencia_notas`: valor_total da nota x soma dos itens, com a diferença
 - Role `powerbi` só com `SELECT` em `evento` e nas views
 
@@ -127,4 +127,10 @@ psql ... -f sql/schema.sql && psql ... -f sql/views.sql
 
 ## Estado atual
 
-- [ ] Nada implementado ainda.
+- [x] Postgres no docker compose (porta local 127.0.0.1:5433), `schema.sql`, `models.py`, `config.py`, `db.py`, `create_app()` com `/saude`.
+- [x] Coluna `posto` removida de `distribuicao` (schema, modelo e banco local).
+- [ ] API de eventos e compras.
+- [ ] Páginas de compras, upload da foto, tela de contagem.
+- [ ] Login por código, `criar-operador`, Flask-Limiter.
+- [ ] `views.sql` e role `powerbi`.
+- [ ] Deploy (Dockerfile, Caddy, backup).
