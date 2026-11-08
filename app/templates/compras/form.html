@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar compra' if compra_id else 'Nova compra' }}{% endblock %}
+
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>{{ 'Editar compra' if compra_id else 'Nova compra' }}</h1>
+  <a class="botao" href="{{ url_for('compras.lista') }}">← Voltar</a>
+</div>
+
+<form id="form-compra" class="form-compra" data-compra-id="{{ compra_id or '' }}" novalidate>
+  <section class="cartao">
+    <h2>Nota fiscal</h2>
+    <div class="grade">
+      <label>Evento
+        <select name="evento_id" data-campo="evento_id" required></select>
+      </label>
+      <label>Data da compra
+        <input name="data_compra" data-campo="data_compra" type="date" required>
+      </label>
+      <label>Fornecedor
+        <input name="fornecedor" data-campo="fornecedor" placeholder="Nome do mercado">
+      </label>
+      <label>Valor total da nota (R$)
+        <input name="valor_total" data-campo="valor_total" inputmode="decimal" required placeholder="0,00">
+      </label>
+    </div>
+
+    <details class="detalhes-nota">
+      <summary>Dados fiscais (opcional)</summary>
+      <div class="grade">
+        <label>CNPJ do emitente
+          <input name="cnpj_emitente" data-campo="cnpj_emitente" inputmode="numeric" placeholder="00.000.000/0000-00">
+        </label>
+        <label>Número da nota
+          <input name="numero_nota" data-campo="numero_nota" inputmode="numeric">
+        </label>
+        <label class="largo">Chave de acesso (44 dígitos)
+          <input name="chave_acesso" data-campo="chave_acesso" inputmode="numeric">
+        </label>
+      </div>
+    </details>
+  </section>
+
+  <section class="cartao">
+    <h2>Foto da nota</h2>
+    <div class="foto-area">
+      <img id="foto-previa" alt="Foto da nota" hidden>
+      <div>
+        <label class="botao" for="foto-arquivo">📷 Tirar ou escolher foto</label>
+        <input id="foto-arquivo" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" data-campo="foto">
+        <button type="button" class="botao" id="foto-remover" hidden>Remover foto</button>
+        <p class="suave" id="foto-status">Nenhuma foto.</p>
+      </div>
+    </div>
+    <input type="hidden" name="foto_path" data-campo="foto_path">
+  </section>
+
+  <section class="cartao">
+    <h2>Itens</h2>
+    <div class="itens-cabecalho" aria-hidden="true">
+      <span>Descrição</span><span>Categoria</span><span>Qtd.</span><span>Unid.</span><span>Valor unit. (R$)</span><span>Total</span><span></span>
+    </div>
+    <div id="itens"></div>
+    <button type="button" class="botao" id="adicionar-item">+ Adicionar item</button>
+
+    <div class="conferencia" id="conferencia">
+      <div><span class="rotulo">Soma dos itens</span> <strong id="soma-itens">R$ 0,00</strong></div>
+      <div><span class="rotulo">Valor da nota</span> <strong id="valor-nota">R$ 0,00</strong></div>
+      <div><span class="rotulo">Diferença</span> <strong id="diferenca">R$ 0,00</strong></div>
+    </div>
+  </section>
+
+  <p class="erro" data-mensagem role="alert" hidden></p>
+
+  <div class="linha rodape-form">
+    <button type="submit" class="botao primario grande" id="salvar">Salvar compra</button>
+    <a class="botao grande" href="{{ url_for('compras.lista') }}">Cancelar</a>
+  </div>
+</form>
+
+<datalist id="categorias">
+  <option value="Legumes e verduras">
+  <option value="Carnes">
+  <option value="Grãos e massas">
+  <option value="Temperos">
+  <option value="Pães">
+  <option value="Bebidas">
+  <option value="Descartáveis">
+  <option value="Gás e limpeza">
+  <option value="Outros">
+</datalist>
+
+<template id="modelo-item">
+  <div class="item-linha">
+    <label><span class="sr-only">Descrição</span>
+      <input data-item="descricao" placeholder="Ex.: Batata" required></label>
+    <label><span class="sr-only">Categoria</span>
+      <input data-item="categoria" list="categorias" placeholder="Categoria"></label>
+    <label><span class="sr-only">Quantidade</span>
+      <input data-item="quantidade" inputmode="decimal" placeholder="Qtd." required></label>
+    <label><span class="sr-only">Unidade</span>
+      <select data-item="unidade">
+        <option value="kg">kg</option>
+        <option value="un">un</option>
+        <option value="l">l</option>
+        <option value="pct">pct</option>
+      </select></label>
+    <label><span class="sr-only">Valor unitário</span>
+      <input data-item="valor_unitario" inputmode="decimal" placeholder="0,00" required></label>
+    <span class="item-total">R$ 0,00</span>
+    <button type="button" class="botao-icone" data-remover title="Remover item" aria-label="Remover item">✕</button>
+  </div>
+</template>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/compras_form.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}Compras{% endblock %}
+
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>Compras</h1>
+  <div class="linha">
+    <label for="evento" class="sr-only">Evento</label>
+    <select id="evento" class="seletor-evento"></select>
+    <a class="botao primario" href="{{ url_for('compras.nova') }}">+ Nova compra</a>
+  </div>
+</div>
+
+<p id="aviso" class="aviso-ok" hidden></p>
+<p id="carregando" class="suave">Carregando…</p>
+<p id="vazio" class="cartao vazio" hidden>Nenhuma compra neste evento ainda.</p>
+
+<div class="tabela-rolagem" id="tabela-wrap" hidden>
+  <table class="tabela">
+    <thead>
+      <tr>
+        <th>Data</th>
+        <th>Fornecedor</th>
+        <th>Nota</th>
+        <th class="num">Valor da nota</th>
+        <th class="num">Soma dos itens</th>
+        <th>Conferência</th>
+        <th>Foto</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="linhas"></tbody>
+    <tfoot>
+      <tr>
+        <th colspan="3">Total</th>
+        <th class="num" id="soma-notas"></th>
+        <th class="num" id="soma-itens"></th>
+        <th colspan="3"></th>
+      </tr>
+    </tfoot>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/compras_lista.js') }}"></script>
+{% endblock %}

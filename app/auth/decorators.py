@@ -1,6 +1,6 @@
 from functools import wraps
 
-from flask import redirect, request, session
+from flask import redirect, request, session, url_for
 
 
 def login_required(view):
@@ -14,7 +14,7 @@ def login_required(view):
         if "operador_id" not in session:
             if request.path.startswith("/api/"):
                 return {"erro": "Faça login para continuar."}, 401
-            return redirect("/login")
+            return redirect(url_for("auth.login"))
         return view(*args, **kwargs)
 
     return envolvida

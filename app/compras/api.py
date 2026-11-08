@@ -6,6 +6,7 @@ from app import validacao as v
 from app.auth.decorators import login_required, operador_atual_id
 from app.db import db
 from app.models import Compra, Evento, ItemCompra
+from app.notas.api import NOME_FOTO
 
 bp = Blueprint("compras_api", __name__, url_prefix="/api/compras")
 
@@ -65,9 +66,16 @@ def ler_campos_compra(dados):
         "numero_nota": v.texto(dados, "numero_nota", max_len=20),
         "chave_acesso": v.digitos(dados, "chave_acesso", 44),
         "valor_total": v.numero(dados, "valor_total", casas=2, minimo=0),
-        "foto_path": v.texto(dados, "foto_path", max_len=300),
+        "foto_path": ler_foto_path(dados),
         "origem_dados": v.opcao(dados, "origem_dados", ORIGENS, padrao="manual"),
     }
+
+
+def ler_foto_path(dados):
+    foto_path = v.texto(dados, "foto_path", max_len=100)
+    if foto_path is not None and not NOME_FOTO.match(foto_path):
+        raise v.ErroValidacao("foto_path", "Foto inválida, envie de novo.")
+    return foto_path
 
 
 def ler_itens(dados):

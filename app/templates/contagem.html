@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contagem · {{ evento.nome }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+</head>
+<body class="pagina-contagem" data-evento-id="{{ evento.id }}">
+  <header class="contagem-topo">
+    <div>
+      <strong>{{ evento.nome }}</strong>
+      <span class="suave">{{ evento.data.strftime('%d/%m/%Y') }}{% if evento.local %} · {{ evento.local }}{% endif %}</span>
+    </div>
+    <div class="contagem-botoes-topo">
+      <button type="button" class="botao" id="tela-cheia" tabindex="-1">⛶ Tela cheia</button>
+      <a class="botao" href="{{ url_for('painel.painel') }}" tabindex="-1">Voltar</a>
+    </div>
+  </header>
+
+  <main class="contagem-centro">
+    <p class="rotulo">Porções servidas</p>
+    <div id="contador" class="contador" aria-live="polite">0</div>
+    <p id="feedback" class="feedback" aria-hidden="true"></p>
+
+    <div class="contagem-acoes">
+      <button type="button" class="botao primario gigante" id="mais" tabindex="-1">+1 <small>Espaço</small></button>
+      <button type="button" class="botao gigante desfazer" id="menos" tabindex="-1">Desfazer <small>Backspace</small></button>
+    </div>
+  </main>
+
+  <footer class="contagem-status">
+    <span id="status-conexao" class="status"><span class="bolinha"></span><span class="texto">Conectando…</span></span>
+    <span id="status-pendentes">0 cliques aguardando envio</span>
+    <span id="status-envio" class="suave"></span>
+    <span class="suave">Operador: {{ session.operador_nome }}</span>
+  </footer>
+
+  <p id="aviso-armazenamento" class="aviso-faixa" hidden>
+    Atenção: este navegador não está guardando os cliques (modo anônimo ou armazenamento bloqueado).
+    Não feche nem recarregue a aba até tudo ser enviado.
+  </p>
+
+  <script src="{{ url_for('static', filename='js/comum.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/contagem.js') }}"></script>
+</body>
+</html>

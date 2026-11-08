@@ -73,16 +73,17 @@ Medidas DAX previstas: Total Gasto, Porções, Custo por Porção, Notas com Dif
 | --- | --- | --- | --- |
 | GET, POST | `/login`, `/logout` | Página | Login por código numérico |
 | GET | `/` | Página | Painel com totais do evento ativo |
-| GET | `/compras`, `/compras/nova` | Página | Lista e formulário com itens dinâmicos |
+| GET | `/compras`, `/compras/nova`, `/compras/<id>/editar` | Página | Lista e formulário com itens dinâmicos |
 | GET | `/contagem/<evento_id>` | Página | Tela do espaço, em tela cheia |
 | GET, POST | `/api/eventos` | JSON | Lista e cria eventos |
 | GET, POST | `/api/compras` | JSON | Lista e cria compra com itens |
 | GET, PUT, DELETE | `/api/compras/<id>` | JSON | Detalhe, edição, remoção |
 | POST | `/api/notas/upload` | JSON | Salva a foto (nome UUID) e devolve o caminho |
+| GET | `/notas/foto/<nome>` | Arquivo | Mostra a foto salva (só nomes gerados pelo upload) |
 | POST | `/api/distribuicoes` | JSON | Recebe um clique ou um lote da fila offline |
 | GET | `/api/eventos/<id>/contador` | JSON | Total atual de porções |
 
-`POST /api/distribuicoes` aceita objeto ou lista: `{evento_id, quantidade, client_id, clicado_em}`. Usar `INSERT ... ON CONFLICT (client_id) DO NOTHING` para o reenvio ser seguro.
+`POST /api/distribuicoes` aceita objeto ou lista: `{evento_id, quantidade, client_id, clicado_em}`. Usar `INSERT ... ON CONFLICT (client_id) DO NOTHING` para o reenvio ser seguro. Responde `{confirmados: [client_id], rejeitados: [{client_id, erro}]}`; o navegador tira os dois da fila. `clicado_em` no futuro (relógio errado) é trocado pela hora do servidor, nunca recusado.
 
 Todas as páginas e `/api/*` exigem login (`@login_required`), exceto `/login`.
 
@@ -129,9 +130,12 @@ psql ... -f sql/schema.sql && psql ... -f sql/views.sql
 
 - [x] Postgres no docker compose (porta local 127.0.0.1:5433), `schema.sql`, `models.py`, `config.py`, `db.py`, `create_app()` com `/saude`.
 - [x] Coluna `posto` removida de `distribuicao` (schema, modelo e banco local).
-- [x] API de eventos e compras (`app/eventos/api.py`, `app/compras/api.py`), validação em `app/validacao.py`, erros da API em JSON. Testada contra o banco local.
-- [x] `login_required` e `flask criar-operador` (`app/auth/`). Falta a tela de login.
-- [ ] Páginas de compras, upload da foto, tela de contagem.
-- [ ] Tela de login por código, `/logout`, Flask-Limiter.
+- [x] API de eventos e compras, validação em `app/validacao.py`, erros da API em JSON.
+- [x] API de distribuição (`/api/distribuicoes`, contador) e upload/exibição da foto (`app/notas/`).
+- [x] Login por código (`/login`, `/logout`), `login_required`, `flask criar-operador`. Sessão de 14 h, cookie SameSite=Lax.
+- [x] Interface: painel (totais + criar evento), lista e formulário de compras com itens dinâmicos e foto, tela de contagem com fila offline. JS em `app/static/js/`, CSS em `app/static/css/estilo.css`.
+- [x] Backend testado contra o banco local; contas de dinheiro do JS conferidas com o `round` do Postgres.
+- [ ] Testar a interface no navegador (ainda não foi aberta num navegador de verdade).
+- [x] Flask-Limiter no login (`app/limitador.py`): 5 tentativas erradas por minuto por IP; acerto não conta. Armazenamento em memória.
 - [ ] `views.sql` e role `powerbi`.
-- [ ] Deploy (Dockerfile, Caddy, backup).
+- [ ] Deploy (Dockerfile, Caddy, backup). Em produção: `SESSION_COOKIE_SECURE=1` e `ATRAS_DE_PROXY=1` no `.env` (sem o segundo, o limite de login vê todo mundo com o IP do Caddy).

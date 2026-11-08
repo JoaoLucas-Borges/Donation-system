@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar{% endblock %}
+{% block classe_body %}pagina-login{% endblock %}
+
+{% block conteudo %}
+<form class="cartao login" method="post" action="{{ url_for('auth.login') }}">
+  <h1>🍲 Sopão</h1>
+  <p class="suave">Digite o seu código de 6 dígitos.</p>
+
+  <label for="codigo" class="sr-only">Código</label>
+  <input id="codigo" name="codigo" type="password" inputmode="numeric"
+         pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"
+         required autofocus placeholder="••••••">
+
+  {% if erro %}<p class="erro" role="alert">{{ erro }}</p>{% endif %}
+
+  <button type="submit" class="botao primario grande">Entrar</button>
+</form>
+{% endblock %}

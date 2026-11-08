@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Sopão{% endblock %} · Sopão</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
+</head>
+<body class="{% block classe_body %}{% endblock %}">
+  {% if session.operador_id %}
+  <header class="topo">
+    <a class="marca" href="{{ url_for('painel.painel') }}">🍲 Sopão</a>
+    <nav class="menu">
+      {% set atual = request.endpoint %}
+      <a href="{{ url_for('painel.painel') }}" {% if atual == 'painel.painel' %}aria-current="page"{% endif %}>Painel</a>
+      <a href="{{ url_for('compras.lista') }}" {% if atual in ['compras.lista', 'compras.editar'] %}aria-current="page"{% endif %}>Compras</a>
+      <a href="{{ url_for('compras.nova') }}" {% if atual == 'compras.nova' %}aria-current="page"{% endif %}>Nova compra</a>
+    </nav>
+    <div class="usuario">
+      <span>{{ session.operador_nome }}</span>
+      <a href="{{ url_for('auth.logout') }}">Sair</a>
+    </div>
+  </header>
+  {% endif %}
+
+  <main class="conteudo">
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/comum.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>
