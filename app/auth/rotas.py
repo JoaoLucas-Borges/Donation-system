@@ -23,6 +23,17 @@ def autenticar(codigo):
     return None
 
 
+def pagina_segura(caminho):
+    """Só aceita caminhos deste site ("/compras"), nunca outro endereço.
+
+    Sem isso, um link como /login?proxima=https://site-falso.com mandaria a
+    pessoa para fora do sistema logo depois de digitar o código (open redirect).
+    """
+    if caminho and caminho.startswith("/") and not caminho.startswith(("//", "/\\")):
+        return caminho
+    return url_for("painel.painel")
+
+
 @bp.route("/login", methods=["GET", "POST"])
 @limitador.limit(
     "5 per minute",
@@ -31,6 +42,11 @@ def autenticar(codigo):
     deduct_when=lambda resposta: resposta.status_code == 401,
 )
 def login():
+    proxima = pagina_segura(request.args.get("proxima"))
+    # Já está logado: não faz sentido mostrar o login de novo
+    if request.method == "GET" and "operador_id" in session:
+        return redirect(proxima)
+
     erro = None
     if request.method == "POST":
         operador = autenticar(request.form.get("codigo", "").strip())
@@ -39,7 +55,7 @@ def login():
             session.permanent = True  # usa o PERMANENT_SESSION_LIFETIME do config
             session["operador_id"] = operador.id
             session["operador_nome"] = operador.nome
-            return redirect(url_for("painel.painel"))
+            return redirect(proxima)
         erro = "Código inválido."
     return render_template("login.html", erro=erro), (401 if erro else 200)
 

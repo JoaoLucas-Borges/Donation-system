@@ -32,7 +32,7 @@ const Sopao = (() => {
     }
 
     if (resposta.status === 401 && redirecionar401) {
-      window.location.href = "/login";
+      window.location.href = `/login?proxima=${encodeURIComponent(location.pathname)}`;
       throw new ErroApi("Sessão expirada.", 401, null);
     }
 
@@ -66,6 +66,45 @@ const Sopao = (() => {
     return `${dia}/${mes}/${ano}`;
   }
 
+  const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho",
+    "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
+
+  // "2026-11-09" -> "09 nov"
+  function dataCurta(iso) {
+    if (!iso) return "";
+    const [, mes, dia] = iso.slice(0, 10).split("-");
+    return `${dia} ${MESES[Number(mes) - 1].slice(0, 3)}`;
+  }
+
+  // "2026-11-09" -> "09 de novembro de 2026"
+  function dataExtenso(iso) {
+    if (!iso) return "";
+    const [ano, mes, dia] = iso.slice(0, 10).split("-");
+    return `${dia} de ${MESES[Number(mes) - 1]} de ${ano}`;
+  }
+
+  // Contagem com dois dígitos, no estilo editorial: 6 -> "06"
+  const doisDigitos = (n) => String(n).padStart(2, "0");
+
+  // Anima um número subindo até o valor final. formatar(n) devolve o texto.
+  // Em "menos movimento" escreve o valor direto.
+  const reduzirMovimento = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  function animarNumero(elemento, valorFinal, formatar, duracaoMs = 1100) {
+    cancelAnimationFrame(elemento._animacao);
+    if (reduzirMovimento || !Number.isFinite(valorFinal)) {
+      elemento.textContent = formatar(valorFinal);
+      return;
+    }
+    const inicio = performance.now();
+    const passo = (agora) => {
+      const t = Math.min(1, (agora - inicio) / duracaoMs);
+      const suave = 1 - Math.pow(2, -10 * t); // desacelera no fim
+      elemento.textContent = formatar(t === 1 ? valorFinal : valorFinal * suave);
+      if (t < 1) elemento._animacao = requestAnimationFrame(passo);
+    };
+    elemento._animacao = requestAnimationFrame(passo);
+  }
+
   // Data de hoje no fuso do navegador, no formato AAAA-MM-DD
   function hojeISO() {
     const d = new Date();
@@ -79,6 +118,14 @@ const Sopao = (() => {
   }
   function guardarEvento(id) {
     try { localStorage.setItem("sopao_evento_id", String(id)); } catch (e) { /* sem problema */ }
+    ligarMenuContagem();
+  }
+
+  // O item "Contagem" do menu abre a contagem do último evento escolhido
+  function ligarMenuContagem() {
+    const link = document.querySelector("[data-menu-contagem]");
+    const id = eventoGuardado();
+    if (link && id) link.href = `/contagem/${id}`;
   }
 
   // Evento padrão: o guardado; senão o de hoje; senão o próximo; senão o mais recente.
@@ -147,9 +194,60 @@ const Sopao = (() => {
     if (caixa) caixa.hidden = true;
   }
 
+  // Liga o formulário de templates/_novo_evento.html.
+  // aoCriar(evento) roda depois que o evento é salvo (ex.: recarregar o <select>).
+  // Devolve abrir(dica), para a página abrir o formulário sozinha quando não há evento.
+  function ligarNovoEvento({ botaoAbrir, aoCriar }) {
+    const form = document.getElementById("form-evento");
+    const dica = form.querySelector("[data-dica]");
+    const botaoCriar = form.querySelector('[type="submit"]');
+
+    function abrir(texto) {
+      form.hidden = false;
+      dica.textContent = texto || "";
+      dica.hidden = !texto;
+      if (!form.elements.data.value) form.elements.data.value = hojeISO();
+      form.elements.nome.focus();
+    }
+
+    function fechar() {
+      form.reset();
+      limparErro(form);
+      form.hidden = true;
+    }
+
+    if (botaoAbrir) botaoAbrir.addEventListener("click", () => abrir());
+    form.querySelector("[data-cancelar]").addEventListener("click", fechar);
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      limparErro(form);
+      botaoCriar.disabled = true;
+      try {
+        const evento = await api("POST", "/api/eventos", {
+          nome: form.elements.nome.value,
+          data: form.elements.data.value,
+          local: form.elements.local.value,
+        });
+        fechar();
+        guardarEvento(evento.id);
+        await aoCriar(evento);
+      } catch (erro) {
+        form.hidden = false;
+        mostrarErro(form, erro);
+      } finally {
+        botaoCriar.disabled = false;
+      }
+    });
+
+    return { abrir, fechar };
+  }
+
+  ligarMenuContagem();
+
   return {
-    api, ErroApi, dinheiro, numero, dataBR, hojeISO,
-    eventoGuardado, guardarEvento, eventoPadrao, preencherEventos,
+    api, ErroApi, dinheiro, numero, dataBR, dataCurta, dataExtenso, doisDigitos, animarNumero, hojeISO,
+    eventoGuardado, guardarEvento, eventoPadrao, preencherEventos, ligarNovoEvento,
     el, mostrarErro, limparErro,
   };
 })();

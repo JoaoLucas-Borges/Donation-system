@@ -1,101 +1,115 @@
 {% extends "base.html" %}
-{% block titulo %}{{ 'Editar compra' if compra_id else 'Nova compra' }}{% endblock %}
+{% set titulo_pagina = 'Editar compra' if compra_id else 'Nova compra' %}
+{% block titulo %}{{ titulo_pagina }}{% endblock %}
 
 {% block conteudo %}
-<div class="cabecalho-pagina">
-  <h1>{{ 'Editar compra' if compra_id else 'Nova compra' }}</h1>
-  <a class="botao" href="{{ url_for('compras.lista') }}">← Voltar</a>
-</div>
+<header class="cabecalho">
+  <div class="cabecalho-topo">
+    <p class="trilha entra" style="--i:0">Campanha Sopão <span>/</span> <a href="{{ url_for('compras.lista') }}">Compras</a> <span>/</span> {{ titulo_pagina }}</p>
+  </div>
+  <div class="cabecalho-linha">
+    <h1 class="titulo"><span class="mascara"><span style="--i:1">{{ titulo_pagina }}</span></span></h1>
+    <p class="subtitulo entra" style="--i:2">{{ 'Corrija o que for preciso e salve.' if compra_id else 'Da nota fiscal para a prestação de contas.' }}</p>
+    <div class="cabecalho-acoes entra" style="--i:3">
+      <a class="botao" href="{{ url_for('compras.lista') }}"><span>← Voltar</span></a>
+    </div>
+  </div>
+</header>
+
+{% include "_novo_evento.html" %}
 
 <form id="form-compra" class="form-compra" data-compra-id="{{ compra_id or '' }}" novalidate>
-  <section class="cartao">
-    <h2>Nota fiscal</h2>
-    <div class="grade">
-      <label>Evento
-        <select name="evento_id" data-campo="evento_id" required></select>
-      </label>
-      <label>Data da compra
-        <input name="data_compra" data-campo="data_compra" type="date" required>
-      </label>
-      <label>Fornecedor
-        <input name="fornecedor" data-campo="fornecedor" placeholder="Nome do mercado">
-      </label>
-      <label>Valor total da nota (R$)
-        <input name="valor_total" data-campo="valor_total" inputmode="decimal" required placeholder="0,00">
-      </label>
-    </div>
-
-    <details class="detalhes-nota">
-      <summary>Dados fiscais (opcional)</summary>
+  <div class="form-principal">
+    <section class="bloco entra" style="--i:3">
+      <header class="bloco-cabeca"><span class="bloco-num">I.</span><h2>Nota fiscal</h2></header>
       <div class="grade">
-        <label>CNPJ do emitente
-          <input name="cnpj_emitente" data-campo="cnpj_emitente" inputmode="numeric" placeholder="00.000.000/0000-00">
+        <div class="campo">
+          <label for="evento_id">Evento</label>
+          <div class="campo-com-botao">
+            <select id="evento_id" name="evento_id" data-campo="evento_id" required></select>
+            <button type="button" class="botao" id="abrir-novo-evento" title="Criar um evento novo"><span>+ Novo</span></button>
+          </div>
+        </div>
+        <label>Data da compra
+          <input name="data_compra" data-campo="data_compra" type="date" required>
         </label>
-        <label>Número da nota
-          <input name="numero_nota" data-campo="numero_nota" inputmode="numeric">
-        </label>
-        <label class="largo">Chave de acesso (44 dígitos)
-          <input name="chave_acesso" data-campo="chave_acesso" inputmode="numeric">
+        <label>Fornecedor
+          <input name="fornecedor" data-campo="fornecedor" placeholder="Nome do mercado">
         </label>
       </div>
-    </details>
-  </section>
 
-  <section class="cartao">
-    <h2>Foto da nota</h2>
-    <div class="foto-area">
-      <img id="foto-previa" alt="Foto da nota" hidden>
-      <div>
-        <label class="botao" for="foto-arquivo">📷 Tirar ou escolher foto</label>
+      <details class="detalhes-nota">
+        <summary>Dados fiscais <em>(opcional)</em></summary>
+        <div class="grade">
+          <label>CNPJ do emitente
+            <input name="cnpj_emitente" data-campo="cnpj_emitente" inputmode="numeric" placeholder="00.000.000/0000-00">
+          </label>
+          <label>Número da nota
+            <input name="numero_nota" data-campo="numero_nota" inputmode="numeric">
+          </label>
+          <label class="largo">Chave de acesso (44 dígitos)
+            <input name="chave_acesso" data-campo="chave_acesso" inputmode="numeric">
+          </label>
+        </div>
+      </details>
+    </section>
+
+    <section class="bloco entra" style="--i:4">
+      <header class="bloco-cabeca"><span class="bloco-num">II.</span><h2>Foto da nota</h2></header>
+      <div class="foto-area" id="foto-area">
+        <img id="foto-previa" alt="Foto da nota" hidden>
+        <label class="soltar" for="foto-arquivo">
+          <svg viewBox="0 0 40 48" aria-hidden="true"><path d="M4 2h22l10 10v34H4z"/><path d="M26 2v10h10M11 24h18M11 31h18M11 38h12"/></svg>
+          <span class="soltar-texto">
+            <strong>Adicionar nota fiscal</strong>
+            <em>Tire uma foto ou arraste a imagem aqui</em>
+          </span>
+          <span class="botao soltar-botao"><span>Selecionar arquivo</span></span>
+        </label>
         <input id="foto-arquivo" type="file" accept="image/jpeg,image/png,image/webp" class="sr-only" data-campo="foto">
-        <button type="button" class="botao" id="foto-remover" hidden>Remover foto</button>
-        <p class="suave" id="foto-status">Nenhuma foto.</p>
+        <div class="foto-rodape">
+          <p class="suave" id="foto-status">Nenhuma foto.</p>
+          <button type="button" class="botao pequeno primario" id="ler-ia" hidden><span>Ler nota com IA</span></button>
+          <button type="button" class="botao pequeno" id="foto-remover" hidden><span>Remover foto</span></button>
+        </div>
+        <p class="aviso-ia" id="aviso-ia" role="status" hidden></p>
       </div>
-    </div>
-    <input type="hidden" name="foto_path" data-campo="foto_path">
-  </section>
+      <input type="hidden" name="foto_path" data-campo="foto_path">
+      <input type="hidden" name="origem_dados" value="manual">
+    </section>
 
-  <section class="cartao">
-    <h2>Itens</h2>
-    <div class="itens-cabecalho" aria-hidden="true">
-      <span>Descrição</span><span>Categoria</span><span>Qtd.</span><span>Unid.</span><span>Valor unit. (R$)</span><span>Total</span><span></span>
-    </div>
-    <div id="itens"></div>
-    <button type="button" class="botao" id="adicionar-item">+ Adicionar item</button>
-
-    <div class="conferencia" id="conferencia">
-      <div><span class="rotulo">Soma dos itens</span> <strong id="soma-itens">R$ 0,00</strong></div>
-      <div><span class="rotulo">Valor da nota</span> <strong id="valor-nota">R$ 0,00</strong></div>
-      <div><span class="rotulo">Diferença</span> <strong id="diferenca">R$ 0,00</strong></div>
-    </div>
-  </section>
-
-  <p class="erro" data-mensagem role="alert" hidden></p>
-
-  <div class="linha rodape-form">
-    <button type="submit" class="botao primario grande" id="salvar">Salvar compra</button>
-    <a class="botao grande" href="{{ url_for('compras.lista') }}">Cancelar</a>
+    <section class="bloco entra" style="--i:5">
+      <header class="bloco-cabeca"><span class="bloco-num">III.</span><h2>Itens</h2></header>
+      <div class="itens-cabecalho" aria-hidden="true">
+        <span>Descrição</span><span>Qtd.</span><span>Unid.</span><span>Valor unit. (R$)</span><span class="num">Total</span><span></span>
+      </div>
+      <div id="itens"></div>
+      <button type="button" class="botao" id="adicionar-item"><span>+ Adicionar item</span></button>
+    </section>
   </div>
-</form>
 
-<datalist id="categorias">
-  <option value="Legumes e verduras">
-  <option value="Carnes">
-  <option value="Grãos e massas">
-  <option value="Temperos">
-  <option value="Pães">
-  <option value="Bebidas">
-  <option value="Descartáveis">
-  <option value="Gás e limpeza">
-  <option value="Outros">
-</datalist>
+  <aside class="form-resumo entra" style="--i:6">
+    <p class="sobretitulo">Resumo</p>
+    <div class="total-compra">
+      <span class="rotulo">Total da compra</span>
+      <strong id="soma-itens">R$ 0,00</strong>
+      <span class="suave" id="qtd-itens">0 itens</span>
+    </div>
+
+    <p class="erro" data-mensagem role="alert" hidden></p>
+
+    <div class="rodape-form">
+      <button type="submit" class="botao primario grande" id="salvar">Salvar compra</button>
+      <a class="botao grande" href="{{ url_for('compras.lista') }}"><span>Cancelar</span></a>
+    </div>
+    <p class="dica">Dica: <kbd>Enter</kbd> num item pula para a próxima linha.</p>
+  </aside>
+</form>
 
 <template id="modelo-item">
   <div class="item-linha">
     <label><span class="sr-only">Descrição</span>
       <input data-item="descricao" placeholder="Ex.: Batata" required></label>
-    <label><span class="sr-only">Categoria</span>
-      <input data-item="categoria" list="categorias" placeholder="Categoria"></label>
     <label><span class="sr-only">Quantidade</span>
       <input data-item="quantidade" inputmode="decimal" placeholder="Qtd." required></label>
     <label><span class="sr-only">Unidade</span>

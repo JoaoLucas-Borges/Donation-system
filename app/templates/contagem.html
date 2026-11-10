@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0a0a0a">
   <title>Contagem · {{ evento.nome }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/estilo.css') }}">
 </head>
 <body class="pagina-contagem" data-evento-id="{{ evento.id }}">
   <header class="contagem-topo">
-    <div>
+    <div class="contagem-evento">
+      <p class="trilha">Campanha Sopão <span>/</span> Contagem</p>
       <strong>{{ evento.nome }}</strong>
-      <span class="suave">{{ evento.data.strftime('%d/%m/%Y') }}{% if evento.local %} · {{ evento.local }}{% endif %}</span>
+      <em>{{ evento.data.strftime('%d/%m/%Y') }}{% if evento.local %} · {{ evento.local }}{% endif %}</em>
     </div>
     <div class="contagem-botoes-topo">
-      <button type="button" class="botao" id="tela-cheia" tabindex="-1">⛶ Tela cheia</button>
-      <a class="botao" href="{{ url_for('painel.painel') }}" tabindex="-1">Voltar</a>
+      <button type="button" class="botao" id="tela-cheia" tabindex="-1"><span>⛶ Tela cheia</span></button>
+      <a class="botao" href="{{ url_for('painel.painel') }}" tabindex="-1"><span>Voltar</span></a>
     </div>
   </header>
 

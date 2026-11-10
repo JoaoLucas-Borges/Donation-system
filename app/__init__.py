@@ -26,22 +26,26 @@ def create_app(config=Config):
     from app.distribuicao.api import bp as distribuicao_api
     from app.eventos.api import bp as eventos_api
     from app.notas.api import bp as notas
+    from app.relatorio.api import bp as relatorio_api
 
     app.register_blueprint(eventos_api)
     app.register_blueprint(compras_api)
     app.register_blueprint(distribuicao_api)
     app.register_blueprint(notas)
+    app.register_blueprint(relatorio_api)
 
     # Páginas (HTML)
     from app.auth.rotas import bp as auth
     from app.compras.paginas import bp as compras
     from app.distribuicao.paginas import bp as distribuicao
     from app.painel import bp as painel
+    from app.relatorio.paginas import bp as relatorio
 
     app.register_blueprint(auth)
     app.register_blueprint(painel)
     app.register_blueprint(compras)
     app.register_blueprint(distribuicao)
+    app.register_blueprint(relatorio)
 
     from app.auth.comandos import criar_operador
 
@@ -70,7 +74,7 @@ def registrar_erros(app):
     def muitas_tentativas(erro):
         mensagem = "Muitas tentativas erradas. Espere 1 minuto e tente de novo."
         if request.path.startswith("/api/"):
-            return {"erro": mensagem}, 429
+            return {"erro": "Muitas tentativas seguidas. Espere 1 minuto e tente de novo."}, 429
         return render_template("login.html", erro=mensagem), 429
 
     @app.errorhandler(HTTPException)

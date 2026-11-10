@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block titulo %}Relatório{% endblock %}
+
+{% block conteudo %}
+<header class="cabecalho">
+  <div class="cabecalho-topo">
+    <p class="trilha entra" style="--i:0">Campanha Sopão <span>/</span> Relatório</p>
+    <label for="evento" class="sr-only">Evento</label>
+    <select id="evento" class="seletor-evento entra" style="--i:1"></select>
+  </div>
+  <div class="cabecalho-linha">
+    <h1 class="titulo"><span class="mascara"><span style="--i:1">Relatório</span></span></h1>
+    <p class="subtitulo entra" style="--i:2">Para onde foi o dinheiro, em porções.</p>
+    <div class="cabecalho-acoes entra" style="--i:3">
+      <a class="botao primario" id="exportar-evento" href="#" download><span>↓ Exportar evento</span></a>
+    </div>
+  </div>
+</header>
+
+<p id="carregando" class="carregando">Carregando…</p>
+<p id="vazio" class="vazio" hidden></p>
+
+<div id="relatorio" hidden>
+  <div class="kpis">
+    <div class="kpi entra" style="--i:3"><span class="rotulo">Total gasto</span><strong id="r-gasto">—</strong></div>
+    <div class="kpi entra" style="--i:4"><span class="rotulo">Porções servidas</span><strong id="r-porcoes">—</strong></div>
+    <div class="kpi entra" style="--i:5"><span class="rotulo">Custo por porção</span><strong id="r-custo">—</strong></div>
+    <div class="kpi entra" style="--i:6"><span class="rotulo">Notas para conferir</span><strong id="r-conferir">—</strong></div>
+  </div>
+
+  <p class="manchete entra" id="manchete" style="--i:6"></p>
+
+  <div class="graficos">
+    <section class="grafico entra" style="--i:7">
+      <header class="grafico-cabeca">
+        <span class="bloco-num">I.</span>
+        <div><h2>Gasto por dia</h2><p class="suave">Soma das notas na data da compra.</p></div>
+      </header>
+      <div class="colunas" id="g-dias"></div>
+    </section>
+
+    <section class="grafico entra" style="--i:8">
+      <header class="grafico-cabeca">
+        <span class="bloco-num">II.</span>
+        <div><h2>Porções por hora</h2><p class="suave">Cliques da contagem, já com os desfazer.</p></div>
+      </header>
+      <div class="colunas" id="g-horas"></div>
+    </section>
+
+    <section class="grafico entra" style="--i:9">
+      <header class="grafico-cabeca">
+        <span class="bloco-num">III.</span>
+        <div><h2>Onde o dinheiro foi</h2><p class="suave">Gasto por fornecedor.</p></div>
+      </header>
+      <div class="barras" id="g-fornecedores"></div>
+    </section>
+
+    <section class="grafico entra" style="--i:10">
+      <header class="grafico-cabeca">
+        <span class="bloco-num">IV.</span>
+        <div><h2>O que foi comprado</h2><p class="suave">Itens que mais pesaram no gasto.</p></div>
+      </header>
+      <div class="barras" id="g-itens"></div>
+    </section>
+  </div>
+
+  <section class="conferencia entra" style="--i:11">
+    <header class="grafico-cabeca">
+      <span class="bloco-num">V.</span>
+      <div><h2>Notas para conferir</h2><p class="suave">Sem foto do comprovante, ou com total diferente da soma dos itens.</p></div>
+    </header>
+    <p class="tudo-certo" id="conferencia-ok" hidden>Tudo certo: todas as notas têm comprovante e batem com os itens.</p>
+    <div class="tabela-rolagem" id="conferencia-tabela" hidden>
+      <table class="tabela">
+        <thead>
+          <tr><th>Data</th><th>Fornecedor</th><th>Nº da nota</th><th class="num">Valor</th><th>O que falta</th><th></th></tr>
+        </thead>
+        <tbody id="conferencia-linhas"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="powerbi entra" style="--i:12">
+    <div class="powerbi-texto">
+      <p class="sobretitulo">Power BI</p>
+      <h2>Levar os números para o Power BI.</h2>
+      <p>
+        Duas formas. A <em>rápida</em> é baixar as planilhas (CSV) e abrir no Power BI ou no Excel.
+        A <em>definitiva</em> é ligar o Power BI direto no banco: ele atualiza sozinho.
+      </p>
+    </div>
+    <ol class="powerbi-passos">
+      <li>
+        <strong>Planilhas</strong>
+        <span>Baixe o ZIP, descompacte numa pasta e, no Power BI, use <em>Obter dados → Pasta</em>.
+          Vêm quatro tabelas: resumo, compras, itens e porções por hora.</span>
+        <span class="linha">
+          <a class="botao" id="exportar-evento-2" href="#" download><span>↓ Este evento</span></a>
+          <a class="botao" href="/api/relatorio/exportar" download><span>↓ Todos os eventos</span></a>
+        </span>
+      </li>
+      <li>
+        <strong>Direto no banco</strong>
+        <span><em>Obter dados → Banco de dados PostgreSQL</em>, servidor <code>localhost</code>, banco <code>sopao</code>,
+          usuário <code>powerbi</code>, modo Importação. Use as views
+          <code>vw_resumo_evento</code>, <code>vw_itens</code>, <code>vw_conferencia_notas</code> e <code>vw_distribuicao</code>.</span>
+      </li>
+    </ol>
+  </section>
+</div>
+
+<div class="dica-grafico" id="dica-grafico" role="tooltip" hidden></div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/relatorio.js') }}"></script>
+{% endblock %}

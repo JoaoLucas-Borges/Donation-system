@@ -1,58 +1,83 @@
 {% extends "base.html" %}
-{% block titulo %}Painel{% endblock %}
+{% block titulo %}Visão geral{% endblock %}
 
 {% block conteudo %}
-<div class="cabecalho-pagina">
-  <h1>Painel</h1>
-  <div class="linha">
+<header class="cabecalho">
+  <div class="cabecalho-topo">
+    <p class="trilha entra" style="--i:0">Campanha Sopão <span>/</span> Visão geral</p>
     <label for="evento" class="sr-only">Evento</label>
-    <select id="evento" class="seletor-evento"></select>
-    <button type="button" class="botao" id="abrir-novo-evento">+ Novo evento</button>
+    <select id="evento" class="seletor-evento entra" style="--i:1"></select>
   </div>
-</div>
+  <div class="cabecalho-linha">
+    <h1 class="titulo"><span class="mascara"><span style="--i:1">Visão geral</span></span></h1>
+    <p class="subtitulo entra" style="--i:2">O que a campanha gastou e serviu.</p>
+    <div class="cabecalho-acoes entra" style="--i:3">
+      <button type="button" class="botao" id="abrir-novo-evento"><span>+ Novo evento</span></button>
+      <a class="botao primario" href="{{ url_for('compras.nova') }}"><span>+ Registrar compra</span></a>
+    </div>
+  </div>
+</header>
 
-<form id="form-evento" class="cartao" hidden>
-  <h2>Novo evento</h2>
-  <div class="grade">
-    <label>Nome <input name="nome" data-campo="nome" required placeholder="Sopão de novembro"></label>
-    <label>Data <input name="data" data-campo="data" type="date" required></label>
-    <label>Local <input name="local" data-campo="local" placeholder="Praça da Matriz"></label>
-  </div>
-  <p class="erro" data-mensagem hidden></p>
-  <div class="linha">
-    <button type="submit" class="botao primario">Criar evento</button>
-    <button type="button" class="botao" id="cancelar-novo-evento">Cancelar</button>
-  </div>
-</form>
+{% include "_novo_evento.html" %}
 
-<p id="sem-eventos" class="cartao vazio" hidden>
-  Nenhum evento cadastrado ainda. Crie o primeiro em <strong>+ Novo evento</strong>.
+<p id="sem-eventos" class="vazio" hidden>
+  Nenhum evento cadastrado ainda. Crie o primeiro em <em>+ Novo evento</em>.
 </p>
 
 <section id="resumo" hidden>
-  <div class="numeros">
-    <div class="numero-cartao">
+  <div class="kpis">
+    <div class="kpi entra" style="--i:3">
       <span class="rotulo">Total gasto</span>
       <strong id="total-gasto">—</strong>
     </div>
-    <div class="numero-cartao">
+    <div class="kpi entra" style="--i:4">
       <span class="rotulo">Porções servidas</span>
       <strong id="porcoes">—</strong>
     </div>
-    <div class="numero-cartao">
+    <div class="kpi entra" style="--i:5">
       <span class="rotulo">Custo por porção</span>
       <strong id="custo-porcao">—</strong>
     </div>
-    <div class="numero-cartao">
-      <span class="rotulo">Notas com diferença</span>
-      <strong id="notas-diferenca">—</strong>
+    <div class="kpi entra" style="--i:6">
+      <span class="rotulo">Compras registradas</span>
+      <strong id="qtd-compras">—</strong>
     </div>
   </div>
 
-  <div class="acoes-painel">
-    <a id="link-contagem" class="botao primario grande" href="#">Abrir tela de contagem</a>
-    <a class="botao grande" href="{{ url_for('compras.nova') }}">Registrar compra</a>
-    <a class="botao grande" href="{{ url_for('compras.lista') }}">Ver compras</a>
+  <div class="destaque">
+    <div class="destaque-texto">
+      <p class="sobretitulo entra" style="--i:6">Prestação de contas</p>
+      <p class="frase entra" id="frase" style="--i:7">…</p>
+
+      <ol class="indice">
+        <li class="entra" style="--i:8">
+          <a id="link-contagem" href="#">
+            <span class="indice-num">01</span>
+            <span class="indice-texto">Abrir a tela de contagem</span>
+            <span class="indice-seta" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li class="entra" style="--i:9">
+          <a href="{{ url_for('compras.nova') }}">
+            <span class="indice-num">02</span>
+            <span class="indice-texto">Registrar uma compra</span>
+            <span class="indice-seta" aria-hidden="true">→</span>
+          </a>
+        </li>
+        <li class="entra" style="--i:10">
+          <a href="{{ url_for('compras.lista') }}">
+            <span class="indice-num">03</span>
+            <span class="indice-texto">Ver as compras e notas</span>
+            <span class="indice-seta" aria-hidden="true">→</span>
+          </a>
+        </li>
+      </ol>
+    </div>
+
+    <figure class="destaque-objeto entra" style="--i:5">
+      <canvas data-tigela aria-hidden="true"></canvas>
+      <figcaption>Fig. 1 — A tigela, em curvas de nível.</figcaption>
+    </figure>
   </div>
 </section>
 {% endblock %}

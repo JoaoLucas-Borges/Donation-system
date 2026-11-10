@@ -3,17 +3,32 @@
 {% block classe_body %}pagina-login{% endblock %}
 
 {% block conteudo %}
-<form class="cartao login" method="post" action="{{ url_for('auth.login') }}">
-  <h1>🍲 Sopão</h1>
-  <p class="suave">Digite o seu código de 6 dígitos.</p>
+<div class="login-casca">
+  <section class="login-arte" aria-hidden="true">
+    <div class="login-marca">{% include "_logo.html" %}</div>
+    <canvas class="login-tigela" data-tigela></canvas>
+    <p class="login-legenda">Campanhas de doação</p>
+  </section>
 
-  <label for="codigo" class="sr-only">Código</label>
-  <input id="codigo" name="codigo" type="password" inputmode="numeric"
-         pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"
-         required autofocus placeholder="••••••">
+  <section class="login-lado">
+    <form class="login" method="post" action="{{ url_for('auth.login', proxima=request.args.get('proxima')) }}">
+      <p class="sobretitulo entra" style="--i:0">Acesso à campanha</p>
+      <h1 class="login-titulo"><span class="mascara"><span style="--i:1">Bem-vindo.</span></span></h1>
+      <p class="login-sub entra" style="--i:2">Informe seu código para continuar.</p>
+      <hr class="fio entra" style="--i:3">
 
-  {% if erro %}<p class="erro" role="alert">{{ erro }}</p>{% endif %}
+      <label for="codigo" class="login-rotulo entra" style="--i:4">Código de acesso</label>
+      <input id="codigo" name="codigo" type="password" inputmode="numeric" class="entra" style="--i:5"
+             pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code"
+             required autofocus placeholder="Digite seu código">
 
-  <button type="submit" class="botao primario grande">Entrar</button>
-</form>
+      {% if erro %}<p class="erro login-erro" role="alert">{{ erro }}</p>{% endif %}
+
+      <button type="submit" class="botao primario grande entra" style="--i:6">
+        <span>Entrar</span>
+      </button>
+    </form>
+    <p class="rodape-pagina">Sopão · Gestão de campanhas</p>
+  </section>
+</div>
 {% endblock %}

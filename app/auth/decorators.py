@@ -14,7 +14,8 @@ def login_required(view):
         if "operador_id" not in session:
             if request.path.startswith("/api/"):
                 return {"erro": "Faça login para continuar."}, 401
-            return redirect(url_for("auth.login"))
+            # Guarda a página pedida para voltar a ela depois do login
+            return redirect(url_for("auth.login", proxima=request.full_path.rstrip("?")))
         return view(*args, **kwargs)
 
     return envolvida

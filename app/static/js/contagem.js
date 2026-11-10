@@ -140,6 +140,24 @@
       alvo.classList.add(classe);
     }
     elFeedback.textContent = quantidade === 1 ? "+1" : "−1 desfeito";
+    soltarEfeito("onda", classe, "");
+    soltarEfeito("voo", classe, quantidade === 1 ? "+1" : "−1");
+  }
+
+  // Onda que se espalha e número que voa. Só enfeite: cada elemento se apaga
+  // sozinho no fim da animação (e por garantia depois de 2 s).
+  const palco = document.querySelector(".contagem-centro");
+  const reduzir = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  function soltarEfeito(tipo, classe, texto) {
+    if (reduzir || palco.querySelectorAll(`.${tipo}`).length > 6) return;
+    const efeito = document.createElement("span");
+    efeito.className = `${tipo} ${classe}`;
+    efeito.setAttribute("aria-hidden", "true");
+    efeito.textContent = texto;
+    palco.append(efeito);
+    const tirar = () => efeito.remove();
+    efeito.addEventListener("animationend", tirar);
+    setTimeout(tirar, 2000);
   }
 
   document.addEventListener("keydown", (e) => {

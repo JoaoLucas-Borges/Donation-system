@@ -1,0 +1,20 @@
+{# Formulário "Novo evento", usado no painel e nas telas de compras.
+   O JS que liga ele é o Sopao.ligarNovoEvento() em static/js/comum.js.
+   Fica fora de outros <form>, porque formulário dentro de formulário não vale em HTML. #}
+<form id="form-evento" class="painel-evento" hidden>
+  <div class="painel-evento-cabeca">
+    <p class="sobretitulo">Novo evento</p>
+    <h2>Um novo dia de campanha.</h2>
+    <p class="suave" data-dica hidden></p>
+  </div>
+  <div class="grade">
+    <label>Nome <input name="nome" data-campo="nome" required placeholder="Sopão de novembro"></label>
+    <label>Data <input name="data" data-campo="data" type="date" required></label>
+    <label>Local <input name="local" data-campo="local" placeholder="Praça da Matriz"></label>
+  </div>
+  <p class="erro" data-mensagem role="alert" hidden></p>
+  <div class="linha">
+    <button type="submit" class="botao primario"><span>Criar evento</span></button>
+    <button type="button" class="botao" data-cancelar><span>Cancelar</span></button>
+  </div>
+</form>

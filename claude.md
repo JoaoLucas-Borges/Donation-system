@@ -62,8 +62,11 @@ Cada dia de campanha é um `evento`. Um ponto de distribuição por dia (sem cam
 
 - `vw_itens`: item_compra + evento_id, data_compra, fornecedor, numero_nota
 - `vw_distribuicao`: evento_id, quantidade, clicado_em, `date_trunc('hour', clicado_em) AS hora`
-- `vw_conferencia_notas`: valor_total da nota x soma dos itens, com a diferença
-- Role `powerbi` só com `SELECT` em `evento` e nas views
+- `vw_conferencia_notas`: valor_total da nota x soma dos itens, com a diferença e `tem_comprovante`
+- `vw_resumo_evento`: uma linha por evento com total_gasto, qtd_compras, porcoes, custo_por_porcao
+- `hora` em `vw_distribuicao` está no horário de Brasília (`AT TIME ZONE 'America/Sao_Paulo'`)
+- Role `powerbi` só com `SELECT` em `evento` e nas views (`sql/powerbi.sql`, senha passada no `psql -v senha=...`)
+- A página `/relatorio` e a exportação CSV leem as mesmas views (número do app = número do Power BI)
 
 Medidas DAX previstas: Total Gasto, Porções, Custo por Porção, Notas com Diferença.
 
@@ -82,10 +85,13 @@ Medidas DAX previstas: Total Gasto, Porções, Custo por Porção, Notas com Dif
 | GET | `/notas/foto/<nome>` | Arquivo | Mostra a foto salva (só nomes gerados pelo upload) |
 | POST | `/api/distribuicoes` | JSON | Recebe um clique ou um lote da fila offline |
 | GET | `/api/eventos/<id>/contador` | JSON | Total atual de porções |
+| GET | `/relatorio` | Página | Gráficos de gastos e porções, notas para conferir, exportação |
+| GET | `/api/relatorio?evento_id=` | JSON | Números agregados do evento (lê as views) |
+| GET | `/api/relatorio/exportar[?evento_id=]` | ZIP | CSVs (`;`, vírgula decimal) para Power BI/Excel; sem evento_id exporta todos |
 
 `POST /api/distribuicoes` aceita objeto ou lista: `{evento_id, quantidade, client_id, clicado_em}`. Usar `INSERT ... ON CONFLICT (client_id) DO NOTHING` para o reenvio ser seguro. Responde `{confirmados: [client_id], rejeitados: [{client_id, erro}]}`; o navegador tira os dois da fila. `clicado_em` no futuro (relógio errado) é trocado pela hora do servidor, nunca recusado.
 
-Todas as páginas e `/api/*` exigem login (`@login_required`), exceto `/login`.
+Todas as páginas e `/api/*` exigem login (`@login_required`), exceto `/login`. Página sem login redireciona para `/login?proxima=<página>` e volta para ela depois do login (só caminhos internos, ver `pagina_segura`).
 
 ## Login por código
 
@@ -116,6 +122,8 @@ docker compose up -d db                 # Postgres local
 flask --app run.py run --debug          # app em desenvolvimento
 flask --app run.py criar-operador "Nome"
 psql ... -f sql/schema.sql && psql ... -f sql/views.sql
+docker compose exec -T db psql -U sopao -d sopao < sql/views.sql   # sem psql instalado
+psql ... -v senha='...' -f sql/powerbi.sql                          # cria/atualiza o usuário powerbi
 ```
 
 ## Plano
@@ -135,7 +143,12 @@ psql ... -f sql/schema.sql && psql ... -f sql/views.sql
 - [x] Login por código (`/login`, `/logout`), `login_required`, `flask criar-operador`. Sessão de 14 h, cookie SameSite=Lax.
 - [x] Interface: painel (totais + criar evento), lista e formulário de compras com itens dinâmicos e foto, tela de contagem com fila offline. JS em `app/static/js/`, CSS em `app/static/css/estilo.css`.
 - [x] Backend testado contra o banco local; contas de dinheiro do JS conferidas com o `round` do Postgres.
-- [ ] Testar a interface no navegador (ainda não foi aberta num navegador de verdade).
+- [x] Visual novo, editorial (Times New Roman, lateral preta, verde-escuro): login, painel, compras (lista + compra selecionada), formulário e contagem. Animações em CSS puro; tigela 3D em `app/static/js/efeitos.js` (canvas, sem biblioteca). Apagar compra é em dois cliques, sem `confirm()`.
+- [ ] Testar a interface no navegador com o banco de verdade (até agora só numa prévia com a API falsa, desktop e 390 px).
 - [x] Flask-Limiter no login (`app/limitador.py`): 5 tentativas erradas por minuto por IP; acerto não conta. Armazenamento em memória.
-- [ ] `views.sql` e role `powerbi`.
+- [x] `views.sql` (aplicado no banco local) e `powerbi.sql` (role, ainda não aplicado: precisa da senha).
+- [x] Página `/relatorio` com gráficos em HTML/CSS puro e exportação ZIP de CSVs. Login volta para a página pedida (`?proxima=`).
+- [x] Fase 2, leitura da nota com IA (LangChain + OpenAI, `MODELO_IA` e `OPENAI_API_KEY` no `.env`): `app/LLM/extracao.py`, rota `POST /api/notas/extrair` (login, limite de 20/min, só nomes do upload, falha da IA vira 502 sem travar o cadastro) testada com foto real. Botão "Ler nota com IA" no formulário preenche, destaca os campos, confere total x soma e grava `origem_dados = 'ia'`. A IA nunca salva sozinha.
+- [ ] Testar o botão "Ler nota com IA" no navegador (a rota já foi testada pelo cliente de testes do Flask).
+- [ ] Montar o .pbix no Power BI Desktop (medidas DAX) a partir das views.
 - [ ] Deploy (Dockerfile, Caddy, backup). Em produção: `SESSION_COOKIE_SECURE=1` e `ATRAS_DE_PROXY=1` no `.env` (sem o segundo, o limite de login vê todo mundo com o IP do Caddy).

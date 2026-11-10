@@ -1,7 +1,7 @@
-"""Upload e exibição da foto da nota fiscal.
+"""Upload e exibição da foto da nota fiscal, e leitura dela com IA.
 
-Fase 2: a extração dos dados com IA vai ler o arquivo salvo aqui
-(pelo foto_path) e devolver os campos para revisão antes de salvar.
+A leitura (/api/notas/extrair) só devolve os campos para o formulário:
+nada é salvo até a pessoa revisar e clicar em Salvar.
 """
 import os
 import re
@@ -10,7 +10,9 @@ import uuid
 from flask import Blueprint, abort, current_app, request, send_from_directory
 
 from app import validacao as v
+from app.LLM.extracao import extrair
 from app.auth.decorators import login_required
+from app.limitador import limitador
 
 bp = Blueprint("notas", __name__)
 
@@ -49,6 +51,36 @@ def upload():
     nome = f"{uuid.uuid4().hex}.{extensao}"
     arquivo.save(os.path.join(pasta, nome))
     return {"foto_path": nome}, 201
+
+
+# Tipo da imagem pela extensão. O NOME_FOTO já garante que é uma dessas três.
+TIPOS_MIME = {"jpg": "image/jpeg", "png": "image/png", "webp": "image/webp"}
+
+
+@bp.post("/api/notas/extrair")
+@login_required
+@limitador.limit("20 per minute")  # cada leitura gasta crédito da IA
+def extrair_nota():
+    dados = v.json_obrigatorio(request)
+    nome = dados.get("foto_path")
+
+    # Só nomes gerados pelo upload: ninguém pede à IA para ler outro arquivo do servidor
+    if not isinstance(nome, str) or not NOME_FOTO.match(nome):
+        raise v.ErroValidacao("foto_path", "Foto inválida. Envie a foto de novo.")
+
+    caminho = os.path.join(current_app.config["UPLOAD_FOLDER"], nome)
+    if not os.path.isfile(caminho):
+        raise v.ErroValidacao("foto_path", "Foto não encontrada. Envie de novo.")
+
+    extensao = nome.rsplit(".", 1)[1]  # "abc123.jpg" -> "jpg"
+    try:
+        nota = extrair(caminho, TIPOS_MIME[extensao])
+    except Exception:
+        # Rede, chave, modelo ou foto ilegível: o cadastro manual continua funcionando
+        current_app.logger.exception("Falha ao ler a nota %s com IA", nome)
+        return {"erro": "A IA não conseguiu ler esta nota."}, 502
+
+    return nota.model_dump()
 
 
 @bp.get("/notas/foto/<nome>")

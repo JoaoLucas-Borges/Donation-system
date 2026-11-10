@@ -8,6 +8,10 @@ from app.db import db
 from app.models import Compra, Evento, ItemCompra
 from app.notas.api import NOME_FOTO
 
+from app.LLM.extracao import extrair
+from app.limitador import limitador
+
+
 bp = Blueprint("compras_api", __name__, url_prefix="/api/compras")
 
 UNIDADES = {"kg", "un", "l", "pct"}
@@ -170,3 +174,8 @@ def remover(compra_id):
     db.session.delete(compra)  # os itens vão junto (ON DELETE CASCADE)
     db.session.commit()
     return "", 204
+
+@bp.post("/anexarcompras")
+@login_required
+def anexar():
+    pass
