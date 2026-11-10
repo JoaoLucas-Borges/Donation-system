@@ -1,11 +1,44 @@
+# No computador (desenvolvimento): docker compose up -d db
+# No servidor (produção):           docker compose up -d --build
 services:
   db:
     image: postgres:16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: sopao
       POSTGRES_USER: sopao
       POSTGRES_PASSWORD: ${DB_PASS}
+    # Só na máquina local: o Power BI chega aqui pelo túnel SSH, nunca pela internet
     ports: ["127.0.0.1:5433:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
+
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Dentro do docker o banco é o serviço "db", não o localhost:5433
+      DATABASE_URL: postgresql+psycopg://sopao:${DB_PASS}@db:5432/sopao
+      UPLOAD_FOLDER: /app/uploads
+      SESSION_COOKIE_SECURE: "1"
+      ATRAS_DE_PROXY: "1"
+    volumes: [uploads:/app/uploads]
+    depends_on: [db]
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      DOMINIO: ${DOMINIO:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+
 volumes:
   pgdata: {}
+  uploads: {}
+  caddy_data: {}
+  caddy_config: {}

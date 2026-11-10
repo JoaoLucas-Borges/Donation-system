@@ -79,6 +79,7 @@ Medidas DAX previstas: Total Gasto, Porções, Custo por Porção, Notas com Dif
 | GET | `/compras`, `/compras/nova`, `/compras/<id>/editar` | Página | Lista e formulário com itens dinâmicos |
 | GET | `/contagem/<evento_id>` | Página | Tela do espaço, em tela cheia |
 | GET, POST | `/api/eventos` | JSON | Lista e cria eventos |
+| DELETE | `/api/eventos/<id>` | JSON | Apaga o evento com compras, itens e porções (para limpar testes; botão no painel em dois cliques) |
 | GET, POST | `/api/compras` | JSON | Lista e cria compra com itens |
 | GET, PUT, DELETE | `/api/compras/<id>` | JSON | Detalhe, edição, remoção |
 | POST | `/api/notas/upload` | JSON | Salva a foto (nome UUID) e devolve o caminho |
@@ -110,10 +111,11 @@ Todas as páginas e `/api/*` exigem login (`@login_required`), exceto `/login`. 
 
 ## Deploy
 
-- `docker-compose.yml` com `db` (porta só em `127.0.0.1:5432`), `app` (gunicorn) e `caddy` (80/443).
-- `Caddyfile`: `sopao.<dominio> { reverse_proxy app:8000 }`.
-- Power BI acessa por túnel: `ssh -L 5432:localhost:5432 usuario@ip-do-vps`, servidor `localhost` no Power BI.
-- Backup: `pg_dump` diário por cron + cópia do volume de uploads.
+- Passo a passo completo em `DEPLOY.md`.
+- `docker-compose.yml` com `db` (porta só em `127.0.0.1:5433`), `app` (gunicorn gthread 2x4, timeout 150 s por causa da IA) e `caddy` (80/443). O compose define `DATABASE_URL` (host `db`), `SESSION_COOKIE_SECURE=1` e `ATRAS_DE_PROXY=1` para o app; o `.env` do servidor só tem `SECRET_KEY`, `DB_PASS`, `DOMINIO`, `MODELO_IA`, `OPENAI_API_KEY`.
+- `Caddyfile`: `{$DOMINIO} { reverse_proxy app:8000 }`.
+- Power BI acessa por túnel: `ssh -L 5432:localhost:5433 usuario@ip-do-vps`, servidor `localhost` no Power BI.
+- Backup: `scripts/backup.sh` (pg_dump + tar do volume de uploads, 14 dias) pelo cron às 3h.
 
 ## Comandos
 
@@ -149,6 +151,8 @@ psql ... -v senha='...' -f sql/powerbi.sql                          # cria/atual
 - [x] `views.sql` (aplicado no banco local) e `powerbi.sql` (role, ainda não aplicado: precisa da senha).
 - [x] Página `/relatorio` com gráficos em HTML/CSS puro e exportação ZIP de CSVs. Login volta para a página pedida (`?proxima=`).
 - [x] Fase 2, leitura da nota com IA (LangChain + OpenAI, `MODELO_IA` e `OPENAI_API_KEY` no `.env`): `app/LLM/extracao.py`, rota `POST /api/notas/extrair` (login, limite de 20/min, só nomes do upload, falha da IA vira 502 sem travar o cadastro) testada com foto real. Botão "Ler nota com IA" no formulário preenche, destaca os campos, confere total x soma e grava `origem_dados = 'ia'`. A IA nunca salva sozinha.
+- [x] Excluir evento: `DELETE /api/eventos/<id>` (uma transação; distribuições e compras do evento vão junto, fotos ficam em uploads) e botão "Excluir evento" no painel, em dois cliques mostrando quantas compras e porções somem. Cliques atrasados da fila offline para um evento apagado voltam em `rejeitados` e saem da fila.
 - [ ] Testar o botão "Ler nota com IA" no navegador (a rota já foi testada pelo cliente de testes do Flask).
 - [ ] Montar o .pbix no Power BI Desktop (medidas DAX) a partir das views.
-- [ ] Deploy (Dockerfile, Caddy, backup). Em produção: `SESSION_COOKIE_SECURE=1` e `ATRAS_DE_PROXY=1` no `.env` (sem o segundo, o limite de login vê todo mundo com o IP do Caddy).
+- [x] Arquivos de deploy: `Dockerfile`, `.dockerignore`, `docker-compose.yml` (db + app + caddy), `Caddyfile`, `scripts/backup.sh`, `DEPLOY.md`. Imagem testada localmente (gunicorn sobe, `/saude` e `/login` respondem). `gunicorn` no requirements.
+- [ ] Deploy de verdade: contratar VPS, apontar DNS, seguir `DEPLOY.md`.

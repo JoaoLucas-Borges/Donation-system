@@ -12,6 +12,7 @@
     <h1 class="titulo"><span class="mascara"><span style="--i:1">Visão geral</span></span></h1>
     <p class="subtitulo entra" style="--i:2">O que a campanha gastou e serviu.</p>
     <div class="cabecalho-acoes entra" style="--i:3">
+      <button type="button" class="botao perigo" id="excluir-evento" hidden><span>Excluir evento</span></button>
       <button type="button" class="botao" id="abrir-novo-evento"><span>+ Novo evento</span></button>
       <a class="botao primario" href="{{ url_for('compras.nova') }}"><span>+ Registrar compra</span></a>
     </div>
@@ -19,6 +20,8 @@
 </header>
 
 {% include "_novo_evento.html" %}
+
+<p class="erro" id="excluir-aviso" role="alert" hidden></p>
 
 <p id="sem-eventos" class="vazio" hidden>
   Nenhum evento cadastrado ainda. Crie o primeiro em <em>+ Novo evento</em>.

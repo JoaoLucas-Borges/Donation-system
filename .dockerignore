@@ -1,0 +1,10 @@
+# Nada disso entra na imagem do app (o .env chega pelo docker compose)
+.git
+.vscode
+venv
+.env
+uploads
+backups
+__pycache__
+**/__pycache__
+*.pyc
