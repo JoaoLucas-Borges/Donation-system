@@ -1,5 +1,6 @@
-# Sopão — sistema de doações para campanhas de alimentação
-
+<img width="3200" height="1000" alt="sopao-banner-final" src="https://github.com/user-attachments/assets/1a282df4-7faf-4166-8748-86a5226ff590" />
+<br>
+<br>
 O Sopão é um sistema web para igrejas e grupos que fazem campanhas de distribuição de comida (sopa, marmitas, cestas). Ele cobre o ciclo inteiro da prestação de contas:
 
 1. **Compras**: cada nota fiscal de alimento é registrada com seus itens e com a foto do comprovante. A IA pode ler a foto e preencher os campos, mas uma pessoa sempre revisa antes de salvar.
