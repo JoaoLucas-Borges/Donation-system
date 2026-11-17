@@ -155,4 +155,5 @@ psql ... -v senha='...' -f sql/powerbi.sql                          # cria/atual
 - [ ] Testar o botão "Ler nota com IA" no navegador (a rota já foi testada pelo cliente de testes do Flask).
 - [ ] Montar o .pbix no Power BI Desktop (medidas DAX) a partir das views.
 - [x] Arquivos de deploy: `Dockerfile`, `.dockerignore`, `docker-compose.yml` (db + app + caddy), `Caddyfile`, `scripts/backup.sh`, `DEPLOY.md`. Imagem testada localmente (gunicorn sobe, `/saude` e `/login` respondem). `gunicorn` no requirements.
-- [ ] Deploy de verdade: contratar VPS, apontar DNS, seguir `DEPLOY.md`.
+- [x] Deploy no VPS Locaweb (Ubuntu 26.04, IP 179.188.193.234) em https://sopao.online (DNS na Hostinger, registro A do `@`). Ajustes que o `DEPLOY.md` não previa: o VPS vinha com nginx ocupando 80/443 (`systemctl disable --now nginx`) e os containers não resolviam DNS (127.0.0.53), corrigido com `/etc/docker/daemon.json` = `{"dns": ["1.1.1.1", "8.8.8.8"]}`.
+- [ ] Teste de ponta a ponta em produção (checklist do passo 8 do `DEPLOY.md`), backup no cron e role `powerbi` no servidor.
